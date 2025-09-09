@@ -21,18 +21,23 @@ jobs:
           SSH_USER: ${{ vars.SSH_USER }}
           SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
         run: |
-          # Setup SSH key
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa_team
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa_team
           chmod 600 ~/.ssh/id_rsa_team
 
-          # Remove old deployment directory on server
-          ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
 
-          # Copy new files from GitHub runner to server
-          scp -r -P $SSH_HOST_PORT -o StrictHostKeyChecking=no ./* $SSH_USER@$SSH_HOST:$DEPLOYMENT_DIRECTORY
+          # # Setup SSH key
+          # mkdir -p ~/.ssh
+          # echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa_team
+          # chmod 600 ~/.ssh/id_rsa_team
 
-          ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT  $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
+          # # Remove old deployment directory on server
+          # ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
+
+          # # Copy new files from GitHub runner to server
+          # scp -r -P $SSH_HOST_PORT -o StrictHostKeyChecking=no ./* $SSH_USER@$SSH_HOST:$DEPLOYMENT_DIRECTORY
+
+          # ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT  $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
             
 
           
