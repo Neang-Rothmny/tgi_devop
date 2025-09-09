@@ -34,8 +34,7 @@ jobs:
 
           ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT  $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
             
-          
-          
+
           
 
           
