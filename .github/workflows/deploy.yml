@@ -1,0 +1,49 @@
+name: Deploy Website to Ubuntu VM
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: deploy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          DEPLOYMENT_DIRECTORY: ${{ vars.DEPLOYMENT_DIRECTORY }}
+          SSH_HOST: ${{ secrets.SERVER_IP }}
+          SSH_USER: ${{ vars.SSH_USER }}
+          SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
+        run: |
+          # Setup SSH key
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Remove old deployment directory on server
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
+
+          # Copy new files from GitHub runner to server
+          scp -r -P $SSH_HOST_PORT -o StrictHostKeyChecking=no ./* $SSH_USER@$SSH_HOST:$DEPLOYMENT_DIRECTORY
+
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p $SSH_HOST_PORT  $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
+            
+          
+          
+          
+          
+            # # build frontend
+            # cd frontend
+            # npm install
+            # npm run build
+            # # restart backend (FastAPI via uvicorn / systemd / docker)
+            # cd ../backend
+            # pip install -r requirements.txt
+            # systemctl --user restart fastapi.service
+            # systemctl --user restart nginx.service
