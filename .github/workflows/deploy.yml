@@ -48,14 +48,14 @@ jobs:
           # Fix permissions
           ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
 
-          # build frontend
-          cd frontend
-          npm install
-          npm start &  # run frontend in background
+          # # build frontend
+          # cd frontend
+          # npm install
+          # npm start &  # run frontend in background
 
-          # go to backend
-          cd ../backend
-          source ../../venv/bin/activate
-          exec uvicorn app:app --host 0.0.0.0 --port 8000
+          # # go to backend
+          # cd ../backend
+          # source ../../venv/bin/activate
+          # exec uvicorn app:app --host 0.0.0.0 --port 8000
 
             
