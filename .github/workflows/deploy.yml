@@ -53,12 +53,14 @@ jobs:
           
 
           
-            # # build frontend
-            # cd frontend
-            # npm install
-            # npm run build
-            # # restart backend (FastAPI via uvicorn / systemd / docker)
-            # cd ../backend
-            # pip install -r requirements.txt
-            # systemctl --user restart fastapi.service
-            # systemctl --user restart nginx.service
+          # build frontend
+          cd frontend
+          npm install
+          npm start &  # run frontend in background
+
+          # go to backend
+          cd ../backend
+          source ../../venv/bin/activate
+          exec uvicorn app:app --host 0.0.0.0 --port 8000
+
+            

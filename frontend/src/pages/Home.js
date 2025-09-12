@@ -37,7 +37,8 @@ function Home() {
       formData.append("file", image);
       formData.append("model_name", "yolov9c"); // optional
 
-      const res = await axios.post("http://localhost:8000/detect", formData, {
+      // const res = await axios.post("http://localhost:8000/detect", formData, {
+      const res = await axios.post("http://100.85.198.109:8000/detect", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
