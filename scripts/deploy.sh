@@ -6,14 +6,12 @@ VENV_PATH="/home/ny/projects/venv"
 
 echo "=== Deploying frontend ==="
 cd $DEPLOY_PATH/frontend
-npm install
-pm2 start npm --name frontend -- run start || pm2 restart frontend
+npm install --legacy-peer-deps
+# Restart frontend service
+sudo systemctl restart frontend.service
 
 echo "=== Deploying backend ==="
-cd $DEPLOY_PATH/backend
-source $VENV_PATH/bin/activate
-# Restart backend using PM2 and uvicorn
-pm2 start uvicorn --name backend -- \
-    app.main:app --host 0.0.0.0 --port 8000 || pm2 restart backend
+# Restart backend service
+sudo systemctl restart backend.service
 
 echo "Deployment complete 🚀"
