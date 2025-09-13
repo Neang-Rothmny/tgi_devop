@@ -28,13 +28,13 @@ jobs:
           SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
         run: |
           ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "echo Connected!"
-      - name: Debug remote server
-        env:
-          SSH_USER: ${{ vars.SSH_USER }}
-          SSH_HOST: ${{ secrets.SERVER_IP }}
-          SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
-        run: |
-          ssh -vvv -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "whoami && pwd && df -h && ls -ld $DEPLOYMENT_DIRECTORY"
+      # - name: Debug remote server
+      #   env:
+      #     SSH_USER: ${{ vars.SSH_USER }}
+      #     SSH_HOST: ${{ secrets.SERVER_IP }}
+      #     SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
+      #   run: |
+      #     ssh -vvv -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "whoami && pwd && df -h && ls -ld $DEPLOYMENT_DIRECTORY"
 
       - name: Deploy files
         env:
