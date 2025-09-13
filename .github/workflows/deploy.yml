@@ -55,8 +55,8 @@ jobs:
           # Fix permissions
           ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
 
-          # Run deployment script on server
-          ssh -i ~/.ssh/id_rsa_team -p $SSH_HOST_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "bash $DEPLOYMENT_DIRECTORY/scripts/deploy.sh"
+          # # Run deployment script on server
+          # ssh -i ~/.ssh/id_rsa_team -p $SSH_HOST_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "bash $DEPLOYMENT_DIRECTORY/scripts/deploy.sh"
 
 
           
