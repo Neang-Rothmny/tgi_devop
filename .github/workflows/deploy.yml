@@ -45,8 +45,6 @@ jobs:
         run: |
           # Remove old deployment directory on server
           ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
-          # ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf '$DEPLOYMENT_DIRECTORY' && mkdir -p '$DEPLOYMENT_DIRECTORY'"
-
           # ssh -vvv -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
 
 
