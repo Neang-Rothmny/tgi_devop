@@ -6,6 +6,7 @@ VENV_PATH="/home/ny/projects/venv"
 
 echo "=== Deploying frontend ==="
 cd $DEPLOY_PATH/frontend
+npm install
 npm run build
 
 
