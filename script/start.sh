@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-DEPLOY_PATH="/home/ny/project/final"
-VENV_PATH="/home/ny/project/venv"
+DEPLOY_PATH="/home/ny/projects/final"
+VENV_PATH="/home/ny/projects/venv"
 
 echo "=== Deploying frontend ==="
 cd $DEPLOY_PATH/frontend
