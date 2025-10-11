@@ -140,30 +140,24 @@ function ImageUploader({ onUpload, onLiveData }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // Draw high-res frame from video
+    // Draw current frame from video
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    // Convert to PNG for better quality (no compression artifacts)
-    const base64Image = canvas.toDataURL("image/png").split(",")[1];
+    // Convert to Blob (so it behaves like a file)
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
 
-    try {
-      const res = await fetch("http://localhost:8000/detect/camera_capture", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64Image, model_name: "yolov9c" }),
-      });
-      const data = await res.json();
+      const file = new File([blob], "captured_image.png", { type: "image/png" });
+      const previewUrl = URL.createObjectURL(file);
 
-      // Store captured image + detections
-      setCapturedImage(canvas.toDataURL("image/png")); // full dataURL for display
-      setDetections(data.detections);
+      // 🔁 Forward captured image to same upload handler
+      onUpload(file, previewUrl);
 
-      onLiveData && onLiveData(data);
-    } catch (err) {
-      console.error("Camera capture failed:", err);
-      setCameraError("Failed to send captured image for detection.");
-    }
+      // Optional: update local preview if you want to see it before detection
+      setPreview(previewUrl);
+    }, "image/png");
   };
+
 
 
 
@@ -204,7 +198,9 @@ function ImageUploader({ onUpload, onLiveData }) {
       }
 
       // Draw detections on canvas
-      drawDetections(data.detections, data.width, data.height);
+      setCapturedImage(canvasRef.current.toDataURL("image/png"));
+      setDetections(data.detections);
+
     };
 
     ws.onerror = (err) => {
@@ -322,20 +318,25 @@ function ImageUploader({ onUpload, onLiveData }) {
                   onClick={captureAndSend}
                   startIcon={<VideocamIcon />}
                 >
-                  Capture & Detect
+                  Capture Image
                 </Button>
               </Box>
             )}
 
             {capturedImage && detections.length > 0 && (
               <DetectionResult
-                imageUrl={capturedImage}
-                boxes={detections.map(det => {
-                  const { x1, y1, x2, y2 } = det.box;
-                  return [x1, y1, x2 - x1, y2 - y1]; // convert to x, y, width, height
-                })}
+                imageUrl={capturedImage || preview}
+                boxes={
+                  detections.length > 0
+                    ? detections.map(det => {
+                        const { x1, y1, x2, y2 } = det.box;
+                        return [x1, y1, x2 - x1, y2 - y1];
+                      })
+                    : []
+                }
                 labels={detections.map(det => det.class_name)}
               />
+
             )}
 
             {/* Live Detection Buttons */}
