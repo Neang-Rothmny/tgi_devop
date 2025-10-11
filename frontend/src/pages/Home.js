@@ -1,56 +1,142 @@
 import React, { useState } from "react";
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import ImageUploader from "../components/ImageUploader";
 import DetectionResult from "../components/DetectionResult";
+import SearchIcon from "@mui/icons-material/Search";
+import axios from "axios";
 
 function Home() {
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [boxes, setBoxes] = useState([]);
+  const [labels, setLabels] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleUpload = (file, url) => {
+  // Handle file upload from ImageUploader
+  const handleUpload = (file, previewUrl) => {
     setImage(file);
-    setImageUrl(url);
-    setBoxes([]); // reset when new image uploaded
+    setImageUrl(previewUrl);
+    setBoxes([]);
+    setLabels([]);
   };
 
+  // Receive results from camera or live detection
+  const handleLiveData = (data) => {
+    if (!data) return;
+    const detections = data.detections || [];
+    const formattedBoxes = detections.map((d) => {
+      const { x1, y1, x2, y2 } = d.box;
+      const w = x2 - x1;
+      const h = y2 - y1;
+      const x = x1 + w / 2;
+      const y = y1 + h / 2;
+      return [x, y, w, h];
+    });
+    const formattedLabels = detections.map((d) => d.class_name || "");
+    setBoxes(formattedBoxes);
+    setLabels(formattedLabels);
+  };
+
+  // Detect Khmer letters for uploaded image
   const handleDetect = async () => {
     if (!image) return;
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append("file", image);
-    formData.append("model_name", "yolov9c");
-
     try {
-      const res = await fetch("http://localhost:8000/detect", {
-        method: "POST",
-        body: formData,
+      const formData = new FormData();
+      formData.append("file", image);
+      const res = await axios.post("/api/detect", formData, {
+      // const res = await axios.post("http://localhost:8000/detect", formData, {
+      // const res = await axios.post("http://100.85.198.109:8000/detect", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      const data = await res.json();
-      setBoxes(data.boxes);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Detection failed. Is backend running?");
+
+      const detections = res.data.detections || [];
+      const formattedBoxes = detections.map((d) => {
+        const { x1, y1, x2, y2 } = d.box;
+        const w = x2 - x1;
+        const h = y2 - y1;
+        const x = x1 + w / 2;
+        const y = y1 + h / 2;
+        return [x, y, w, h];
+      });
+      const formattedLabels = detections.map((d) => d.class_name || "");
+
+      setBoxes(formattedBoxes);
+      setLabels(formattedLabels);
+    } catch (err) {
+      console.error("Detection failed:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="home-container">
-      <h1>YOLO Object Detection</h1>
-      <p>Upload an image and detect objects using a YOLO model.</p>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        py: 6,
+        px: 2,
+        background: "linear-gradient(135deg, #f0f4f8 0%, #d9e4f5 100%)",
+      }}
+    >
+      <Container maxWidth="md">
+        {/* Header */}
+        <Box textAlign="center" mb={4}>
+          <Typography variant="h4" fontWeight={600} gutterBottom>
+            Khmer Letter Detection
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Upload or captureto detect Khmer letters.
+          </Typography>
+        </Box>
 
-      <ImageUploader onUpload={handleUpload} />
+        {/* Upload & Camera Section */}
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: 4 }}>
+          <CardContent sx={{ textAlign: "center" }}>
+            <Typography variant="h6" gutterBottom>
+              Step 1: Choose Method
+            </Typography>
+            <ImageUploader onUpload={handleUpload} onLiveData={handleLiveData} />
+          </CardContent>
+        </Card>
 
-      {image && (
-        <button onClick={handleDetect} className="detect-btn" disabled={loading}>
-          {loading ? "Detecting..." : "Detect"}
-        </button>
-      )}
+        {/* Detect Button for uploaded image */}
+        {image && (
+          <Box textAlign="center" mb={4}>
+            <Button
+              onClick={handleDetect}
+              variant="contained"
+              size="large"
+              startIcon={
+                loading ? <CircularProgress size={20} color="inherit" /> : <SearchIcon />
+              }
+              disabled={loading}
+              sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.2,
+                backgroundColor: "#1976d2",
+                "&:hover": { backgroundColor: "#115293" },
+              }}
+            >
+              {loading ? "Detecting..." : "Run Detection"}
+            </Button>
+          </Box>
+        )}
 
-      <DetectionResult boxes={boxes} imageUrl={imageUrl} />
-    </div>
+        {/* Detection Results */}
+        {imageUrl && <DetectionResult boxes={boxes} labels={labels} imageUrl={imageUrl} />}
+      </Container>
+    </Box>
   );
 }
 

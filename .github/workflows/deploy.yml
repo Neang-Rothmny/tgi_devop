@@ -1,0 +1,71 @@
+name: Deploy Website to Ubuntu VM
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: deploy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa_team
+          chmod 600 ~/.ssh/id_rsa_team
+
+      - name: Test SSH connection
+        env:
+          SSH_USER: ${{ vars.SSH_USER }}
+          SSH_HOST: ${{ secrets.SERVER_IP }}
+          SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
+        run: |
+          ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "echo Connected!"
+      # - name: Debug remote server
+      #   env:
+      #     SSH_USER: ${{ vars.SSH_USER }}
+      #     SSH_HOST: ${{ secrets.SERVER_IP }}
+      #     SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
+      #   run: |
+      #     ssh -vvv -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "whoami && pwd && df -h && ls -ld $DEPLOYMENT_DIRECTORY"
+
+      - name: Deploy files
+        env:
+          SSH_USER: ${{ vars.SSH_USER }}
+          SSH_HOST: ${{ secrets.SERVER_IP }}
+          SSH_HOST_PORT: ${{ vars.SSH_HOST_PORT }}
+          DEPLOYMENT_DIRECTORY: ${{ vars.DEPLOYMENT_DIRECTORY }}
+        run: |
+          # Remove old deployment directory on server
+          ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
+          # ssh -vvv -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "rm -rf $DEPLOYMENT_DIRECTORY && mkdir -p $DEPLOYMENT_DIRECTORY"
+
+
+          # Copy new files from GitHub runner to server
+          # scp -r -P $SSH_HOST_PORT -o StrictHostKeyChecking=no ./* $SSH_USER@$SSH_HOST:$DEPLOYMENT_DIRECTORY
+          scp -i ~/.ssh/id_rsa_team -r -P $SSH_HOST_PORT -o StrictHostKeyChecking=no ./* $SSH_USER@$SSH_HOST:$DEPLOYMENT_DIRECTORY
+
+          # Fix permissions
+          ssh -i ~/.ssh/id_rsa_team -o StrictHostKeyChecking=no -p $SSH_HOST_PORT $SSH_USER@$SSH_HOST "chmod 755 -R $DEPLOYMENT_DIRECTORY"
+
+          # Run deployment script on server
+          # ssh -i ~/.ssh/id_rsa_team -p $SSH_HOST_PORT -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "bash $DEPLOYMENT_DIRECTORY/script/start.sh"
+
+
+          
+            # # build frontend
+            # cd frontend
+            # npm install
+            # npm run build
+            # # restart backend (FastAPI via uvicorn / systemd / docker)
+            # cd ../backend
+            # pip install -r requirements.txt
+            # systemctl --user restart fastapi.service
+            # systemctl --user restart nginx.service
