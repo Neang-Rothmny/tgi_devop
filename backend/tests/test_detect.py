@@ -25,8 +25,18 @@ def test_detect_endpoint_returns_boxes_and_classes(client):
     assert resp.status_code == 200
     body = resp.json()
 
-    # From our fake detector we expect one box and one class id
-    assert "boxes" in body and isinstance(body["boxes"], list)
-    assert "classes" in body and isinstance(body["classes"], list)
-    assert body["boxes"] == [[10, 20, 30, 40]]
-    assert body["classes"] == [0]
+    # Check response structure matches new API
+    assert "width" in body and body["width"] == 50
+    assert "height" in body and body["height"] == 50
+    assert "detections" in body and isinstance(body["detections"], list)
+    assert "inference_ms" in body and isinstance(body["inference_ms"], (int, float))
+
+    # From our fake detector we expect one detection
+    assert len(body["detections"]) == 1
+    detection = body["detections"][0]
+    
+    assert "box" in detection
+    assert detection["box"] == {"x1": 10, "y1": 20, "x2": 40, "y2": 60}
+    assert detection["confidence"] == 0.95
+    assert detection["class_id"] == 0
+    assert detection["class_name"] == "ក"
