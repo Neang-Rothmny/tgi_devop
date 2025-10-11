@@ -3,7 +3,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, WebSo
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from detector import Detector
+from .detector import Detector
 from PIL import Image
 import io
 import numpy as np
