@@ -20,22 +20,43 @@ def _install_fake_detector_module():
     """
     fake_detector = types.ModuleType("detector")
 
+    class _TensorLike:
+        """Mimics a tensor with tolist() method"""
+        def __init__(self, data):
+            self._data = data
+        
+        def tolist(self):
+            return self._data if isinstance(self._data, list) else [self._data]
+        
+        def __float__(self):
+            return float(self._data)
+        
+        def __int__(self):
+            return int(self._data)
+
     class _SeqWithToList:
         def __init__(self, data):
             self._data = data
 
         def tolist(self):
             return list(self._data)
+        
+        def __iter__(self):
+            # Wrap each item in _TensorLike so it has .tolist()
+            for item in self._data:
+                yield _TensorLike(item)
 
     class _FakeBoxes:
         def __init__(self):
-            # minimal shape similar to ultralytics result
-            self.xywh = _SeqWithToList([[10, 20, 30, 40]])
-            self.cls = _SeqWithToList([0])
+            # Match the new API: xyxy format (x1, y1, x2, y2), conf, cls
+            self.xyxy = _SeqWithToList([[10, 20, 40, 60]])  # x1, y1, x2, y2
+            self.conf = _SeqWithToList([0.95])  # confidence score
+            self.cls = _SeqWithToList([0])  # class id
 
     class _FakeResult:
         def __init__(self):
             self.boxes = _FakeBoxes()
+            self.names = {0: "ក"}  # Fake class names mapping
 
     class Detector:  # noqa: N801 - match name imported in app.py
         instance = None
