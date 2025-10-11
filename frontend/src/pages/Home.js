@@ -95,7 +95,7 @@ function Home() {
             Khmer Letter Detection
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
-            Upload, capture, or stream live video to detect Khmer letters.
+            Upload or captureto detect Khmer letters.
           </Typography>
         </Box>
 
