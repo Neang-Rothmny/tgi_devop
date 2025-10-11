@@ -25,8 +25,7 @@ jobs:
       
       - name: Run backend tests
         run: |
-          cd backend
-          pytest -v tests/
+          pytest -v backend/tests/
   
   deploy:
     runs-on: ubuntu-latest

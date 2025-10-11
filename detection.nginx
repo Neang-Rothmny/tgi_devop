@@ -1,0 +1,40 @@
+# === HTTPS Server ===
+server {
+    listen 443 ssl;
+    server_name kh_detection.com www.kh_detection.com; 
+
+    # SSL Certificates
+    ssl_certificate /etc/nginx/ssl/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # === Frontend (React) ===
+    root /home/ny/projects/final/frontend/build;  # <- use /build for React production build
+    index index.html;
+
+    # Serve React app
+    location / {
+        try_files $uri /index.html;
+    }
+
+    # === Backend (FastAPI) ===
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/;  
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Optional: handle CORS or large payloads
+    client_max_body_size 20M;
+}
+
+# === HTTP → HTTPS Redirect ===
+server {
+    listen 80;
+    server_name kh_detection.com www.kh_detection.com;
+    return 301 https://$host$request_uri;
+}
